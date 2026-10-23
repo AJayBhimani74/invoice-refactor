@@ -30,4 +30,18 @@ class TaxCalculatorTest extends TestCase
     {
         $this->assertSame(['IGST 12%' => 12000], $this->lines(new TaxCalculator('KA', 1200), 'MH'));
     }
+
+    public function test_cgst_and_sgst_are_rounded_separately_so_they_can_differ_from_igst_by_a_paisa(): void
+    {
+        $tax = new TaxCalculator('MH');
+        $base = Money::fromRupees(150.03);
+
+        $split = array_sum(array_map(fn (Money $m) => $m->paise, $tax->lines($base, 'MH')));
+        $whole = array_sum(array_map(fn (Money $m) => $m->paise, $tax->lines($base, 'KA')));
+
+        // 9% is 13.5027 -> 13.50 twice = 27.00, but 18% is 27.0054 -> 27.01.
+        // The original script did this too; whether it is right is a question for the business.
+        $this->assertSame(2700, $split);
+        $this->assertSame(2701, $whole);
+    }
 }
