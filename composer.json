@@ -9,10 +9,17 @@
         "phpunit/phpunit": "^11.0"
     },
     "autoload": {
-        "files": ["src/invoice.php"]
+        "files": [
+            "src/invoice.php"
+        ],
+        "psr-4": {
+            "Invoice\\": "src/Invoice/"
+        }
     },
     "autoload-dev": {
-        "classmap": ["tests/Cases.php"]
+        "classmap": [
+            "tests/Cases.php"
+        ]
     },
     "config": {
         "sort-packages": true

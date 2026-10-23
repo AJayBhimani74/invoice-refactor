@@ -9,10 +9,6 @@ const CUSTOMER_DISCOUNTS = ['wholesale' => 0.08, 'vip' => 0.12];
 const WELCOME_COUPON_RATE = 0.10;
 const FLAT_COUPON_AMOUNT = 200;
 const FLAT_COUPON_MINIMUM = 2000;
-const FREE_SHIPPING_FROM = 5000;
-const ZONE_LOCAL_STATES = ['MH', 'GJ'];
-// zone => [first kg, each extra kg]
-const SHIPPING_RATES = [1 => [50, 10], 2 => [90, 18], 3 => [900, 250]];
 
 function calculate_invoice($order)
 {
@@ -65,24 +61,7 @@ function calculate_invoice($order)
     }
 
     // shipping
-    $zone = 2;
-    if (in_array($order['ship_to'], ZONE_LOCAL_STATES)) {
-        $zone = 1;
-    } else if ($order['ship_to'] == 'INTL') {
-        $zone = 3;
-    }
-    $kg = ceil($weight);
-    if ($kg < 1) {
-        $kg = 1;
-    }
-    [$first_kg, $extra_kg] = SHIPPING_RATES[$zone];
-    $ship = $first_kg + ($kg - 1) * $extra_kg;
-    if ($freeship && $zone != 3) {
-        $ship = 0;
-    }
-    if ($after >= FREE_SHIPPING_FROM && $zone != 3) {
-        $ship = 0;
-    }
+    $ship = (new Invoice\ShippingCalculator)->cost($order['ship_to'], $weight, $after, $freeship);
 
     // tax
     $base = $after + $ship;
