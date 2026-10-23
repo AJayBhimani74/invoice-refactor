@@ -1,8 +1,8 @@
 <?php
 // invoice.php - prints an invoice for a web order
 
-$TAX = 0.18;
-$SELLER_STATE = 'MH';
+$GLOBALS['TAX'] = 0.18;
+$GLOBALS['SELLER_STATE'] = 'MH';
 
 function build_invoice($order)
 {
