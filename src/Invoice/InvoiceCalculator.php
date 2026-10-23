@@ -17,37 +17,42 @@ class InvoiceCalculator
 
     public function calculate(array $order): array
     {
-        $sub = 0;
+        $subtotal = Money::zero();
         $weight = 0;
         $lines = [];
-        foreach ($order['items'] as $i) {
-            $line = round($this->bulk->lineTotal($i['price'], $i['qty']), 2);
-            $sub = $sub + $line;
-            $weight = $weight + $i['weight'] * $i['qty'];
-            $lines[] = ['name' => $i['name'], 'qty' => $i['qty'], 'amount' => $line];
+
+        foreach ($order['items'] as $item) {
+            $amount = $this->bulk->lineTotal(Money::fromRupees($item['price']), $item['qty']);
+            $subtotal = $subtotal->plus($amount);
+            $weight += $item['weight'] * $item['qty'];
+            $lines[] = ['name' => $item['name'], 'qty' => $item['qty'], 'amount' => $amount];
         }
 
-        $disc = $this->customerDiscount->amount($order['customer']['type'], $sub);
-        $after = $sub - $disc;
+        $customerDiscount = $this->customerDiscount->amount($order['customer']['type'], $subtotal);
+        $payable = $subtotal->minus($customerDiscount);
 
         $coupon = $this->coupons->find($order['coupon'] ?? null);
-        $cdisc = $coupon ? $coupon->amount($order, $sub, $after) : 0;
-        $freeship = $coupon ? $coupon->freeShipping() : false;
-        $after = max(0, $after - $cdisc);
+        $couponDiscount = $coupon ? $coupon->amount($order, $subtotal, $payable) : Money::zero();
+        $payable = $payable->minus($couponDiscount)->atLeastZero();
 
-        $ship = $this->shipping->cost($order['ship_to'], $weight, $after, $freeship);
+        $shipping = $this->shipping->cost($order['ship_to'], $weight, $payable, $coupon?->freeShipping() ?? false);
 
-        $base = $after + $ship;
+        $base = $payable->plus($shipping);
         $taxLines = $this->tax->lines($base, $order['ship_to']);
+
+        $total = $base;
+        foreach ($taxLines as $amount) {
+            $total = $total->plus($amount);
+        }
 
         return [
             'lines' => $lines,
-            'subtotal' => $sub,
-            'customer_discount' => $disc,
-            'coupon_discount' => $cdisc,
-            'shipping' => $ship,
+            'subtotal' => $subtotal,
+            'customer_discount' => $customerDiscount,
+            'coupon_discount' => $couponDiscount,
+            'shipping' => $shipping,
             'tax_lines' => $taxLines,
-            'total' => round($base + array_sum($taxLines), 2),
+            'total' => $total,
         ];
     }
 }

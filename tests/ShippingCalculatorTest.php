@@ -1,5 +1,6 @@
 <?php
 
+use Invoice\Money;
 use Invoice\ShippingCalculator;
 use PHPUnit\Framework\TestCase;
 
@@ -12,6 +13,11 @@ class ShippingCalculatorTest extends TestCase
         $this->shipping = new ShippingCalculator;
     }
 
+    private function cost(string $shipTo, float $kg, float $payable, bool $coupon): int
+    {
+        return $this->shipping->cost($shipTo, $kg, Money::fromRupees($payable), $coupon)->paise;
+    }
+
     public function test_zones(): void
     {
         $this->assertSame(1, $this->shipping->zone('MH'));
@@ -22,30 +28,30 @@ class ShippingCalculatorTest extends TestCase
 
     public function test_first_kilo_and_extra_kilos_are_priced_per_zone(): void
     {
-        $this->assertEquals(50, $this->shipping->cost('MH', 1, 100, false));
-        $this->assertEquals(70, $this->shipping->cost('MH', 3, 100, false));
-        $this->assertEquals(90, $this->shipping->cost('KA', 1, 100, false));
-        $this->assertEquals(126, $this->shipping->cost('KA', 3, 100, false));
-        $this->assertEquals(1400, $this->shipping->cost('INTL', 3, 100, false));
+        $this->assertSame(5000, $this->cost('MH', 1, 100, false));
+        $this->assertSame(7000, $this->cost('MH', 3, 100, false));
+        $this->assertSame(9000, $this->cost('KA', 1, 100, false));
+        $this->assertSame(12600, $this->cost('KA', 3, 100, false));
+        $this->assertSame(140000, $this->cost('INTL', 3, 100, false));
     }
 
     public function test_weight_is_rounded_up_and_never_below_one_kilo(): void
     {
-        $this->assertEquals(60, $this->shipping->cost('MH', 1.01, 100, false));
-        $this->assertEquals(50, $this->shipping->cost('MH', 0.01, 100, false));
-        $this->assertEquals(50, $this->shipping->cost('MH', 0, 100, false));
+        $this->assertSame(6000, $this->cost('MH', 1.01, 100, false));
+        $this->assertSame(5000, $this->cost('MH', 0.01, 100, false));
+        $this->assertSame(5000, $this->cost('MH', 0, 100, false));
     }
 
     public function test_free_over_5000_but_not_for_international(): void
     {
-        $this->assertEquals(0, $this->shipping->cost('KA', 2, 5000, false));
-        $this->assertEquals(90 + 18, $this->shipping->cost('KA', 2, 4999.99, false));
-        $this->assertEquals(900 + 250, $this->shipping->cost('INTL', 2, 9000, false));
+        $this->assertSame(0, $this->cost('KA', 2, 5000, false));
+        $this->assertSame(10800, $this->cost('KA', 2, 4999.99, false));
+        $this->assertSame(115000, $this->cost('INTL', 2, 9000, false));
     }
 
     public function test_free_shipping_coupon_works_domestically_only(): void
     {
-        $this->assertEquals(0, $this->shipping->cost('KA', 2, 100, true));
-        $this->assertEquals(1150, $this->shipping->cost('INTL', 2, 100, true));
+        $this->assertSame(0, $this->cost('KA', 2, 100, true));
+        $this->assertSame(115000, $this->cost('INTL', 2, 100, true));
     }
 }

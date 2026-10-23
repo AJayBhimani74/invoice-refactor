@@ -3,28 +3,34 @@
 use Invoice\BulkDiscount;
 use Invoice\Coupons\CouponRegistry;
 use Invoice\CustomerDiscount;
+use Invoice\Money;
 use PHPUnit\Framework\TestCase;
 
 class DiscountTest extends TestCase
 {
+    private function rupees(int $rupees): Money
+    {
+        return Money::fromRupees($rupees);
+    }
+
     public function test_bulk_tiers_start_at_10_and_50_pieces(): void
     {
         $bulk = new BulkDiscount;
 
-        $this->assertEquals(180, $bulk->lineTotal(20, 9));
-        $this->assertEquals(190, $bulk->lineTotal(20, 10));
-        $this->assertEquals(931, $bulk->lineTotal(20, 49));
-        $this->assertEquals(900, $bulk->lineTotal(20, 50));
+        $this->assertSame(18000, $bulk->lineTotal($this->rupees(20), 9)->paise);
+        $this->assertSame(19000, $bulk->lineTotal($this->rupees(20), 10)->paise);
+        $this->assertSame(93100, $bulk->lineTotal($this->rupees(20), 49)->paise);
+        $this->assertSame(90000, $bulk->lineTotal($this->rupees(20), 50)->paise);
     }
 
     public function test_customer_discount_by_type(): void
     {
         $discount = new CustomerDiscount;
 
-        $this->assertEquals(0, $discount->amount('retail', 1000));
-        $this->assertEquals(80, $discount->amount('wholesale', 1000));
-        $this->assertEquals(120, $discount->amount('vip', 1000));
-        $this->assertEquals(0, $discount->amount('something-new', 1000));
+        $this->assertSame(0, $discount->amount('retail', $this->rupees(1000))->paise);
+        $this->assertSame(8000, $discount->amount('wholesale', $this->rupees(1000))->paise);
+        $this->assertSame(12000, $discount->amount('vip', $this->rupees(1000))->paise);
+        $this->assertSame(0, $discount->amount('something-new', $this->rupees(1000))->paise);
     }
 
     public function test_registry_ignores_case_spaces_and_unknown_codes(): void
@@ -42,17 +48,17 @@ class DiscountTest extends TestCase
         $coupon = (new CouponRegistry)->find('WELCOME10');
         $first = ['customer' => ['type' => 'retail', 'first_order' => true]];
 
-        $this->assertEquals(90, $coupon->amount($first, 1000, 900));
-        $this->assertEquals(0, $coupon->amount(['customer' => ['type' => 'retail', 'first_order' => false]], 1000, 900));
-        $this->assertEquals(0, $coupon->amount(['customer' => ['type' => 'vip', 'first_order' => true]], 1000, 900));
+        $this->assertSame(9000, $coupon->amount($first, $this->rupees(1000), $this->rupees(900))->paise);
+        $this->assertTrue($coupon->amount(['customer' => ['type' => 'retail', 'first_order' => false]], $this->rupees(1000), $this->rupees(900))->isZero());
+        $this->assertTrue($coupon->amount(['customer' => ['type' => 'vip', 'first_order' => true]], $this->rupees(1000), $this->rupees(900))->isZero());
     }
 
     public function test_flat_coupon_needs_a_subtotal_of_2000(): void
     {
         $coupon = (new CouponRegistry)->find('FLAT200');
 
-        $this->assertEquals(200, $coupon->amount([], 2000, 2000));
-        $this->assertEquals(0, $coupon->amount([], 1999.99, 1999.99));
+        $this->assertSame(20000, $coupon->amount([], $this->rupees(2000), $this->rupees(2000))->paise);
+        $this->assertTrue($coupon->amount([], Money::fromPaise(199999), Money::fromPaise(199999))->isZero());
     }
 
     public function test_only_the_freeship_coupon_waives_shipping(): void

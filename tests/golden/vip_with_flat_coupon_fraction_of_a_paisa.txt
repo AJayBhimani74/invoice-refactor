@@ -5,5 +5,5 @@ Item                      8     1653.44
 Subtotal: 1653.44
 Customer discount: -198.41
 Shipping: 70.00
-IGST 18%: 274.50
-TOTAL: 1799.53
+IGST 18%: 274.51
+TOTAL: 1799.54

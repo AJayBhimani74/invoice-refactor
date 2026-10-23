@@ -4,16 +4,16 @@ namespace Invoice;
 
 class BulkDiscount
 {
-    // from this quantity on => share taken off the line
-    private const TIERS = [50 => 0.10, 10 => 0.05];
+    // from this quantity on => basis points taken off the line
+    private const TIERS = [50 => 1000, 10 => 500];
 
-    public function lineTotal(float $price, int $qty): float
+    public function lineTotal(Money $price, int $qty): Money
     {
-        $line = $price * $qty;
+        $line = $price->times($qty);
 
-        foreach (self::TIERS as $from => $rate) {
+        foreach (self::TIERS as $from => $points) {
             if ($qty >= $from) {
-                return $line - $line * $rate;
+                return $line->basisPoints(10000 - $points);
             }
         }
 

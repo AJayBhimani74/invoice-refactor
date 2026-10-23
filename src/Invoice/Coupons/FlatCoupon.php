@@ -2,15 +2,13 @@
 
 namespace Invoice\Coupons;
 
+use Invoice\Money;
+
 class FlatCoupon implements Coupon
 {
-    private const AMOUNT = 200;
-
-    private const MINIMUM_SUBTOTAL = 2000;
-
-    public function amount(array $order, float $subtotal, float $payable): float
+    public function amount(array $order, Money $subtotal, Money $payable): Money
     {
-        return $subtotal >= self::MINIMUM_SUBTOTAL ? self::AMOUNT : 0;
+        return $subtotal->isAtLeast(Money::fromRupees(2000)) ? Money::fromRupees(200) : Money::zero();
     }
 
     public function freeShipping(): bool

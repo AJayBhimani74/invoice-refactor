@@ -2,13 +2,15 @@
 
 namespace Invoice\Coupons;
 
+use Invoice\Money;
+
 interface Coupon
 {
     /**
-     * @param  float  $subtotal  sum of the lines
-     * @param  float  $payable  subtotal after the customer discount
+     * @param  Money  $subtotal  sum of the lines
+     * @param  Money  $payable  subtotal after the customer discount
      */
-    public function amount(array $order, float $subtotal, float $payable): float;
+    public function amount(array $order, Money $subtotal, Money $payable): Money;
 
     public function freeShipping(): bool;
 }

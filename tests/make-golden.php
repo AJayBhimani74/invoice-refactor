@@ -1,7 +1,8 @@
 <?php
 
 // Records what build_invoice() prints for every case in cases.php.
-// Run it only against the original script, never after refactoring started.
+// Only run this against the original script. After an intentional change, update the
+// golden files for the affected cases by hand and review the diff first.
 
 require __DIR__.'/../vendor/autoload.php';
 

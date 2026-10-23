@@ -6,5 +6,5 @@ function build_invoice($order)
     $invoice = (new Invoice\InvoiceCalculator)->calculate($order);
     echo (new Invoice\InvoicePrinter)->render($invoice);
 
-    return $invoice['total'];
+    return $invoice['total']->paise / 100.0;
 }

@@ -6,26 +6,29 @@ class TaxCalculator
 {
     public function __construct(
         private string $sellerState = 'MH',
-        private float $rate = 0.18,
+        private int $rateBasisPoints = 1800,
     ) {
     }
 
-    /** @return array<string, float> label => amount */
-    public function lines(float $base, string $shipTo): array
+    /** @return array<string, Money> label => amount */
+    public function lines(Money $base, string $shipTo): array
     {
         if ($shipTo == 'INTL') {
             return [];
         }
 
         if ($shipTo == $this->sellerState) {
-            $half = round($base * $this->rate / 2, 2);
+            $half = $base->basisPoints(intdiv($this->rateBasisPoints, 2));
+            $label = $this->percent($this->rateBasisPoints / 2);
 
-            return [
-                'CGST '.($this->rate * 50).'%' => $half,
-                'SGST '.($this->rate * 50).'%' => $half,
-            ];
+            return ["CGST {$label}%" => $half, "SGST {$label}%" => $half];
         }
 
-        return ['IGST '.($this->rate * 100).'%' => round($base * $this->rate, 2)];
+        return ['IGST '.$this->percent($this->rateBasisPoints).'%' => $base->basisPoints($this->rateBasisPoints)];
+    }
+
+    private function percent(float $basisPoints): string
+    {
+        return (string) ($basisPoints / 100);
     }
 }
