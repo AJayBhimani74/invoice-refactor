@@ -1,0 +1,9 @@
+INVOICE
+-------
+Item                     11     4678.15
+
+Subtotal: 4678.15
+Coupon discount: -467.82
+Shipping: 80.00
+IGST 18%: 772.26
+TOTAL: 5062.60

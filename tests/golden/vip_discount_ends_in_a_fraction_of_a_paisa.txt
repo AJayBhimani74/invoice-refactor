@@ -1,0 +1,9 @@
+INVOICE
+-------
+Item                     10     6273.14
+
+Subtotal: 6273.14
+Customer discount: -752.78
+Shipping: 0.00
+IGST 18%: 993.67
+TOTAL: 6514.03

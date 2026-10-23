@@ -51,6 +51,10 @@ class Cases
             'tiny_parcel_is_billed_as_1kg' => $order([$item('Sticker', 15.00, 1, 0.01)]),
             'discounts_cannot_go_below_zero' => $order([$item('Sticker', 100.00, 1, 0.01)], 'retail', 'MH', 'FLAT200', false),
             'multi_line_mixed_bulk' => $order([$item('Pens', 20.00, 50, 0.02), $item('Notebook', 120.00, 10, 0.3), $item('Bag', 799.00, 1, 0.9)], 'wholesale', 'KA'),
+            'wholesale_discount_ends_in_a_fraction_of_a_paisa' => $order([$item('Item', 278.69, 5, 0.3)], 'wholesale', 'KA'),
+            'vip_discount_ends_in_a_fraction_of_a_paisa' => $order([$item('Item', 660.33, 10, 0.3)], 'vip', 'GJ'),
+            'welcome10_ends_in_a_fraction_of_a_paisa' => $order([$item('Item', 447.67, 11, 0.3)], 'retail', 'GJ', 'WELCOME10', true),
+            'vip_with_flat_coupon_fraction_of_a_paisa' => $order([$item('Item', 206.68, 8, 0.3)], 'vip', 'GJ', 'FLAT200'),
             'rounding_cgst_sgst_one_paisa_off' => $order([$item('Odd', 100.03, 1, 0.01)]),
         ];
     }
