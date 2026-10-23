@@ -1,0 +1,20 @@
+{
+    "name": "ajaybhimani74/invoice-refactor",
+    "description": "A messy invoice script refactored step by step with tests",
+    "type": "project",
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "files": ["src/invoice.php"]
+    },
+    "autoload-dev": {
+        "classmap": ["tests/Cases.php"]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
