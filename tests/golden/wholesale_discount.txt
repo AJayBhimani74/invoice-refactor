@@ -1,0 +1,10 @@
+INVOICE
+-------
+Cables                    4     1200.00
+
+Subtotal: 1200.00
+Customer discount: -96.00
+Shipping: 50.00
+CGST 9%: 103.86
+SGST 9%: 103.86
+TOTAL: 1361.72

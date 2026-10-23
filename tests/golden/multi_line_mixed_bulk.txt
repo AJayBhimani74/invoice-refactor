@@ -1,0 +1,11 @@
+INVOICE
+-------
+Pens                     50      900.00
+Notebook                 10     1140.00
+Bag                       1      799.00
+
+Subtotal: 2839.00
+Customer discount: -227.12
+Shipping: 162.00
+IGST 18%: 499.30
+TOTAL: 3273.18

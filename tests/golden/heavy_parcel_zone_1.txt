@@ -1,0 +1,8 @@
+INVOICE
+-------
+Dumbbell                  6     2400.00
+
+Subtotal: 2400.00
+Shipping: 190.00
+IGST 18%: 466.20
+TOTAL: 3056.20

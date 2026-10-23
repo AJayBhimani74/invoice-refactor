@@ -1,0 +1,8 @@
+INVOICE
+-------
+Mug                       2     1800.00
+
+Subtotal: 1800.00
+Shipping: 50.00
+IGST 18%: 333.00
+TOTAL: 2183.00

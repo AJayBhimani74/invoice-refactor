@@ -1,0 +1,7 @@
+INVOICE
+-------
+Dumbbell                  6     2400.00
+
+Subtotal: 2400.00
+Shipping: 4400.00
+TOTAL: 6800.00

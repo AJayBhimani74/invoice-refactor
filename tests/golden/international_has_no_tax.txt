@@ -1,0 +1,7 @@
+INVOICE
+-------
+Notebook                  3      360.00
+
+Subtotal: 360.00
+Shipping: 900.00
+TOTAL: 1260.00

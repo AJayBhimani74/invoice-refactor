@@ -1,0 +1,9 @@
+INVOICE
+-------
+Chair                     2     3000.00
+
+Subtotal: 3000.00
+Coupon discount: -200.00
+Shipping: 120.00
+IGST 18%: 525.60
+TOTAL: 3445.60

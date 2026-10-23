@@ -1,0 +1,9 @@
+INVOICE
+-------
+Notebook                  3      360.00
+
+Subtotal: 360.00
+Shipping: 50.00
+CGST 9%: 36.90
+SGST 9%: 36.90
+TOTAL: 483.80

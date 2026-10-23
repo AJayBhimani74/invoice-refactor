@@ -1,0 +1,9 @@
+INVOICE
+-------
+Odd                       1      100.03
+
+Subtotal: 100.03
+Shipping: 50.00
+CGST 9%: 13.50
+SGST 9%: 13.50
+TOTAL: 177.03

@@ -1,0 +1,9 @@
+INVOICE
+-------
+Mug                       1      300.00
+
+Subtotal: 300.00
+Shipping: 50.00
+CGST 9%: 31.50
+SGST 9%: 31.50
+TOTAL: 413.00

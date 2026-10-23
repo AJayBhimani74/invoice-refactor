@@ -1,0 +1,9 @@
+INVOICE
+-------
+Sticker                   1      100.00
+
+Subtotal: 100.00
+Shipping: 50.00
+CGST 9%: 13.50
+SGST 9%: 13.50
+TOTAL: 177.00

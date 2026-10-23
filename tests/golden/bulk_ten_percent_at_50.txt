@@ -1,0 +1,9 @@
+INVOICE
+-------
+Pens                     50      900.00
+
+Subtotal: 900.00
+Shipping: 50.00
+CGST 9%: 85.50
+SGST 9%: 85.50
+TOTAL: 1121.00

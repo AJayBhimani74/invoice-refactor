@@ -1,0 +1,8 @@
+INVOICE
+-------
+Monitor                   1     6000.00
+
+Subtotal: 6000.00
+Shipping: 0.00
+IGST 18%: 1080.00
+TOTAL: 7080.00

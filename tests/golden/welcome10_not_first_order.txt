@@ -1,0 +1,9 @@
+INVOICE
+-------
+Lamp                      2     1798.00
+
+Subtotal: 1798.00
+Shipping: 70.00
+CGST 9%: 168.12
+SGST 9%: 168.12
+TOTAL: 2204.24
