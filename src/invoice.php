@@ -4,14 +4,13 @@
 $GLOBALS['TAX'] = 0.18;
 $GLOBALS['SELLER_STATE'] = 'MH';
 
-function build_invoice($order)
+function calculate_invoice($order)
 {
     global $TAX, $SELLER_STATE;
 
     $sub = 0;
     $weight = 0;
-    echo "INVOICE\n";
-    echo "-------\n";
+    $lines = [];
     foreach ($order['items'] as $i) {
         $line = $i['price'] * $i['qty'];
         if ($i['qty'] >= 50) {
@@ -22,10 +21,8 @@ function build_invoice($order)
         $line = round($line, 2);
         $sub = $sub + $line;
         $weight = $weight + $i['weight'] * $i['qty'];
-        echo str_pad($i['name'], 22) . str_pad($i['qty'], 5, ' ', STR_PAD_LEFT) . str_pad(number_format($line, 2, '.', ''), 12, ' ', STR_PAD_LEFT) . "\n";
+        $lines[] = ['name' => $i['name'], 'qty' => $i['qty'], 'amount' => $line];
     }
-    echo "\n";
-    echo "Subtotal: " . number_format($sub, 2, '.', '') . "\n";
 
     // customer discount
     $disc = 0;
@@ -57,12 +54,6 @@ function build_invoice($order)
     if ($after < 0) {
         $after = 0;
     }
-    if ($disc > 0) {
-        echo "Customer discount: -" . number_format($disc, 2, '.', '') . "\n";
-    }
-    if ($cdisc > 0) {
-        echo "Coupon discount: -" . number_format($cdisc, 2, '.', '') . "\n";
-    }
 
     // shipping
     $zone = 2;
@@ -88,27 +79,64 @@ function build_invoice($order)
     if ($after >= 5000 && $zone != 3) {
         $ship = 0;
     }
-    echo "Shipping: " . number_format($ship, 2, '.', '') . "\n";
 
     // tax
     $base = $after + $ship;
     $cgst = 0;
     $sgst = 0;
     $igst = 0;
+    $tax_lines = [];
     if ($order['ship_to'] != 'INTL') {
         if ($order['ship_to'] == $SELLER_STATE) {
             $cgst = round($base * $TAX / 2, 2);
             $sgst = round($base * $TAX / 2, 2);
-            echo "CGST 9%: " . number_format($cgst, 2, '.', '') . "\n";
-            echo "SGST 9%: " . number_format($sgst, 2, '.', '') . "\n";
+            $tax_lines['CGST 9%'] = $cgst;
+            $tax_lines['SGST 9%'] = $sgst;
         } else {
             $igst = round($base * $TAX, 2);
-            echo "IGST 18%: " . number_format($igst, 2, '.', '') . "\n";
+            $tax_lines['IGST 18%'] = $igst;
         }
     }
 
     $total = round($base + $cgst + $sgst + $igst, 2);
-    echo "TOTAL: " . number_format($total, 2, '.', '') . "\n";
 
-    return $total;
+    return [
+        'lines' => $lines,
+        'subtotal' => $sub,
+        'customer_discount' => $disc,
+        'coupon_discount' => $cdisc,
+        'shipping' => $ship,
+        'tax_lines' => $tax_lines,
+        'total' => $total,
+    ];
+}
+
+function print_invoice($invoice)
+{
+    echo "INVOICE\n";
+    echo "-------\n";
+    foreach ($invoice['lines'] as $l) {
+        echo str_pad($l['name'], 22) . str_pad($l['qty'], 5, ' ', STR_PAD_LEFT) . str_pad(number_format($l['amount'], 2, '.', ''), 12, ' ', STR_PAD_LEFT) . "\n";
+    }
+    echo "\n";
+    echo "Subtotal: " . number_format($invoice['subtotal'], 2, '.', '') . "\n";
+    if ($invoice['customer_discount'] > 0) {
+        echo "Customer discount: -" . number_format($invoice['customer_discount'], 2, '.', '') . "\n";
+    }
+    if ($invoice['coupon_discount'] > 0) {
+        echo "Coupon discount: -" . number_format($invoice['coupon_discount'], 2, '.', '') . "\n";
+    }
+    echo "Shipping: " . number_format($invoice['shipping'], 2, '.', '') . "\n";
+    foreach ($invoice['tax_lines'] as $label => $amount) {
+        echo $label . ": " . number_format($amount, 2, '.', '') . "\n";
+    }
+    echo "TOTAL: " . number_format($invoice['total'], 2, '.', '') . "\n";
+}
+
+function build_invoice($order)
+{
+    $invoice = calculate_invoice($order);
+    print_invoice($invoice);
+
+    return $invoice['total'];
 }
