@@ -1,9 +1,6 @@
 <?php
 // invoice.php - prints an invoice for a web order
 
-$GLOBALS['TAX'] = 0.18;
-$GLOBALS['SELLER_STATE'] = 'MH';
-
 const BULK_TIERS = [50 => 0.10, 10 => 0.05];
 const CUSTOMER_DISCOUNTS = ['wholesale' => 0.08, 'vip' => 0.12];
 const WELCOME_COUPON_RATE = 0.10;
@@ -12,8 +9,6 @@ const FLAT_COUPON_MINIMUM = 2000;
 
 function calculate_invoice($order)
 {
-    global $TAX, $SELLER_STATE;
-
     $sub = 0;
     $weight = 0;
     $lines = [];
@@ -65,23 +60,9 @@ function calculate_invoice($order)
 
     // tax
     $base = $after + $ship;
-    $cgst = 0;
-    $sgst = 0;
-    $igst = 0;
-    $tax_lines = [];
-    if ($order['ship_to'] != 'INTL') {
-        if ($order['ship_to'] == $SELLER_STATE) {
-            $cgst = round($base * $TAX / 2, 2);
-            $sgst = round($base * $TAX / 2, 2);
-            $tax_lines['CGST 9%'] = $cgst;
-            $tax_lines['SGST 9%'] = $sgst;
-        } else {
-            $igst = round($base * $TAX, 2);
-            $tax_lines['IGST 18%'] = $igst;
-        }
-    }
+    $tax_lines = (new Invoice\TaxCalculator)->lines($base, $order['ship_to']);
 
-    $total = round($base + $cgst + $sgst + $igst, 2);
+    $total = round($base + array_sum($tax_lines), 2);
 
     return [
         'lines' => $lines,
