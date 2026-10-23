@@ -14,7 +14,7 @@ One entry per commit, in order. "Safety net" is what would have caught a mistake
 | 8 | Move tax into `TaxCalculator`, drop the globals | Seller state and rate became constructor arguments. The global variables are gone. | golden + unit tests |
 | 9 | Move discounts into small classes | `BulkDiscount`, `CustomerDiscount`, a `Coupon` interface with one class per coupon, and `CouponRegistry`. | golden + unit tests |
 | 10 | Move calculating and printing into classes | `InvoiceCalculator` and `InvoicePrinter`. `build_invoice()` stays as a thin wrapper. | golden tests |
-| 11 | Add orders where a discount ends in a fraction of a paisa | Found by comparing the original script with the new code on thousands of random orders. Four of the differing orders were added as cases, with output **from the original script**. Green, because the code had not changed yet. | |
+| 11 | Add orders where a discount ends in a fraction of a paisa | Found by comparing the original script with the new code on many random orders. Four of the differing orders were added as cases, with output **from the original script**. Green, because the code had not changed yet. | |
 | 12 | Add `Money` | An amount in whole paise, with half-up rounding by basis points. Tests for it. | `MoneyTest` |
 | 13 | Calculate in whole paise | **Behaviour change.** Discounts are now rounded to the paisa. The four cases from step 11 changed by one paisa in tax or total, the other 26 did not. I reviewed each diff before updating those four files. | golden diff review |
 | 14 | Pin the CGST/SGST rounding quirk | CGST and SGST are rounded separately and can differ by a paisa from the rounded 18%. Left as it was and covered by a test, because it may be correct. | `TaxCalculatorTest` |
