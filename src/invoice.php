@@ -1,55 +1,26 @@
 <?php
 // invoice.php - prints an invoice for a web order
 
-const BULK_TIERS = [50 => 0.10, 10 => 0.05];
-const CUSTOMER_DISCOUNTS = ['wholesale' => 0.08, 'vip' => 0.12];
-const WELCOME_COUPON_RATE = 0.10;
-const FLAT_COUPON_AMOUNT = 200;
-const FLAT_COUPON_MINIMUM = 2000;
-
 function calculate_invoice($order)
 {
     $sub = 0;
     $weight = 0;
     $lines = [];
     foreach ($order['items'] as $i) {
-        $line = $i['price'] * $i['qty'];
-        foreach (BULK_TIERS as $from => $rate) {
-            if ($i['qty'] >= $from) {
-                $line = $line - $line * $rate;
-                break;
-            }
-        }
-        $line = round($line, 2);
+        $line = round((new Invoice\BulkDiscount)->lineTotal($i['price'], $i['qty']), 2);
         $sub = $sub + $line;
         $weight = $weight + $i['weight'] * $i['qty'];
         $lines[] = ['name' => $i['name'], 'qty' => $i['qty'], 'amount' => $line];
     }
 
     // customer discount
-    $disc = 0;
-    if (isset(CUSTOMER_DISCOUNTS[$order['customer']['type']])) {
-        $disc = $sub * CUSTOMER_DISCOUNTS[$order['customer']['type']];
-    }
+    $disc = (new Invoice\CustomerDiscount)->amount($order['customer']['type'], $sub);
     $after = $sub - $disc;
 
     // coupon
-    $freeship = false;
-    $cdisc = 0;
-    if (isset($order['coupon']) && $order['coupon']) {
-        $c = strtoupper(trim($order['coupon']));
-        if ($c == 'WELCOME10') {
-            if ($order['customer']['type'] == 'retail' && $order['customer']['first_order']) {
-                $cdisc = $after * WELCOME_COUPON_RATE;
-            }
-        } else if ($c == 'FLAT200') {
-            if ($sub >= FLAT_COUPON_MINIMUM) {
-                $cdisc = FLAT_COUPON_AMOUNT;
-            }
-        } else if ($c == 'FREESHIP') {
-            $freeship = true;
-        }
-    }
+    $coupon = (new Invoice\Coupons\CouponRegistry)->find($order['coupon'] ?? null);
+    $cdisc = $coupon ? $coupon->amount($order, $sub, $after) : 0;
+    $freeship = $coupon ? $coupon->freeShipping() : false;
     $after = $after - $cdisc;
     if ($after < 0) {
         $after = 0;
