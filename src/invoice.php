@@ -4,6 +4,16 @@
 $GLOBALS['TAX'] = 0.18;
 $GLOBALS['SELLER_STATE'] = 'MH';
 
+const BULK_TIERS = [50 => 0.10, 10 => 0.05];
+const CUSTOMER_DISCOUNTS = ['wholesale' => 0.08, 'vip' => 0.12];
+const WELCOME_COUPON_RATE = 0.10;
+const FLAT_COUPON_AMOUNT = 200;
+const FLAT_COUPON_MINIMUM = 2000;
+const FREE_SHIPPING_FROM = 5000;
+const ZONE_LOCAL_STATES = ['MH', 'GJ'];
+// zone => [first kg, each extra kg]
+const SHIPPING_RATES = [1 => [50, 10], 2 => [90, 18], 3 => [900, 250]];
+
 function calculate_invoice($order)
 {
     global $TAX, $SELLER_STATE;
@@ -13,10 +23,11 @@ function calculate_invoice($order)
     $lines = [];
     foreach ($order['items'] as $i) {
         $line = $i['price'] * $i['qty'];
-        if ($i['qty'] >= 50) {
-            $line = $line - $line * 0.10;
-        } else if ($i['qty'] >= 10) {
-            $line = $line - $line * 0.05;
+        foreach (BULK_TIERS as $from => $rate) {
+            if ($i['qty'] >= $from) {
+                $line = $line - $line * $rate;
+                break;
+            }
         }
         $line = round($line, 2);
         $sub = $sub + $line;
@@ -26,10 +37,8 @@ function calculate_invoice($order)
 
     // customer discount
     $disc = 0;
-    if ($order['customer']['type'] == 'wholesale') {
-        $disc = $sub * 0.08;
-    } else if ($order['customer']['type'] == 'vip') {
-        $disc = $sub * 0.12;
+    if (isset(CUSTOMER_DISCOUNTS[$order['customer']['type']])) {
+        $disc = $sub * CUSTOMER_DISCOUNTS[$order['customer']['type']];
     }
     $after = $sub - $disc;
 
@@ -40,11 +49,11 @@ function calculate_invoice($order)
         $c = strtoupper(trim($order['coupon']));
         if ($c == 'WELCOME10') {
             if ($order['customer']['type'] == 'retail' && $order['customer']['first_order']) {
-                $cdisc = $after * 0.10;
+                $cdisc = $after * WELCOME_COUPON_RATE;
             }
         } else if ($c == 'FLAT200') {
-            if ($sub >= 2000) {
-                $cdisc = 200;
+            if ($sub >= FLAT_COUPON_MINIMUM) {
+                $cdisc = FLAT_COUPON_AMOUNT;
             }
         } else if ($c == 'FREESHIP') {
             $freeship = true;
@@ -57,7 +66,7 @@ function calculate_invoice($order)
 
     // shipping
     $zone = 2;
-    if ($order['ship_to'] == 'MH' || $order['ship_to'] == 'GJ') {
+    if (in_array($order['ship_to'], ZONE_LOCAL_STATES)) {
         $zone = 1;
     } else if ($order['ship_to'] == 'INTL') {
         $zone = 3;
@@ -66,17 +75,12 @@ function calculate_invoice($order)
     if ($kg < 1) {
         $kg = 1;
     }
-    if ($zone == 1) {
-        $ship = 50 + ($kg - 1) * 10;
-    } else if ($zone == 2) {
-        $ship = 90 + ($kg - 1) * 18;
-    } else {
-        $ship = 900 + ($kg - 1) * 250;
-    }
+    [$first_kg, $extra_kg] = SHIPPING_RATES[$zone];
+    $ship = $first_kg + ($kg - 1) * $extra_kg;
     if ($freeship && $zone != 3) {
         $ship = 0;
     }
-    if ($after >= 5000 && $zone != 3) {
+    if ($after >= FREE_SHIPPING_FROM && $zone != 3) {
         $ship = 0;
     }
 
